@@ -96,6 +96,12 @@
       $("#profileModal").modal("hide");
     });
 
+    $('a[data-toggle="tab"]').click(function () {
+      setTimeout(function () {
+        calculateTotals();
+      });
+    });
+
     $("#profileModalDelete").click(function (event) {
       event.preventDefault();
       if (!canDelete()) {
