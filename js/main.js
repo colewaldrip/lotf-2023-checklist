@@ -96,12 +96,6 @@
       $("#profileModal").modal("hide");
     });
 
-    $('a[data-toggle="tab"]').click(function () {
-      setTimeout(function () {
-        calculateTotals();
-      });
-    });
-
     $("#profileModalDelete").click(function (event) {
       event.preventDefault();
       if (!canDelete()) {
@@ -122,16 +116,12 @@
       var hidden = !$(this).is(":checked");
 
       $("body").toggleClass("hide_completed", !hidden);
-
-      calculateTotals();
     });
 
     $("#toggleHideEquipment").change(function () {
       var hidden = !$(this).is(":checked");
 
       $("body").toggleClass("hide_equipment", !hidden);
-
-      calculateTotals();
     });
 
     $("#toggleCollapseAll").change(function () {
@@ -210,10 +200,9 @@
             break;
           }
           if (
-            !checkbox.is(":visible") ||
-            (checkbox.is(":hidden") &&
-              checkbox.prop("id").match(regexFilter) &&
-              canFilter(checkbox.closest("li")))
+            checkbox.is(":hidden") &&
+            checkbox.prop("id").match(regexFilter) &&
+            canFilter(checkbox.closest("li"))
           ) {
             continue;
           }
