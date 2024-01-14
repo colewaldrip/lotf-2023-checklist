@@ -159,6 +159,10 @@
       calculateTotals();
     });
 
+    $('[data-bs-toggle="tab"]').click(function () {
+      window.scrollTo({ top: 0 });
+    });
+
     calculateTotals();
   });
 
