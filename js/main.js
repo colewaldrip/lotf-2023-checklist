@@ -245,17 +245,15 @@
     var content = $el.clone().find("ul").remove().end().html();
     var sublists = $el.children("ul");
 
-    content =
-      '<div class="checkbox">' +
-      "<label>" +
-      '<input type="checkbox" id="' +
-      $el.attr("data-id") +
-      '">' +
-      '<span class="item_content">' +
-      content +
-      "</span>" +
-      "</label>" +
-      "</div>";
+    content = `
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="" id="${$el.attr(
+          "data-id"
+        )}">
+        <label class="form-check-label" for="${$el.attr("data-id")}">
+          ${content}
+        </label>
+      </div>`;
 
     $el.html(content).append(sublists);
 

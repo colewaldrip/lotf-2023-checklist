@@ -1,49 +1,143 @@
+body {
+  padding-top: 66px;
+  line-height: 1.75;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Bellefair", serif;
+}
+
+.nav-link.active {
+  font-weight: 600;
+}
+
+body.hide_completed .completed {
+  display: none !important;
+}
+
+input[type="checkbox"]:checked + .form-check-label {
+  text-decoration: line-through;
+}
+
 .in_progress,
 .done {
-  color: #c60;
+  color: rgb(255, 218, 106);
+  background-color: rgba(255, 218, 106, 0.1);
   border: 1px solid;
+  border-color: rgba(255, 218, 106, 0.3);
   border-radius: 3px;
   padding: 0.1em 0.4em;
   font-weight: normal;
   margin-left: 0.2em;
-  vertical-align: middle;
-  font-size: 0.9em;
+  font-size: 0.65em;
+  display: inline-flex;
+  font-family: Helvetica, sans-serif;
 }
 .done {
-  color: #009933;
+  color: rgb(68, 249, 192);
+  background-color: rgba(68, 249, 192, 0.1);
+  border-color: rgba(68, 249, 192, 0.3);
 }
 
-@media print {
-  body {
-    color: #000;
+.page-layout {
+  display: flex;
+  gap: 2rem;
+}
+.page-content {
+  flex-grow: none;
+}
+.table-of-contents {
+  position: sticky;
+  top: 90px;
+  align-self: flex-start;
+  max-height: 80vh;
+  overflow-y: auto;
+  flex: 0 0 175px;
+}
+.table-of-contents ul {
+  list-style-type: none;
+  padding-left: 0;
+  line-height: 1.25;
+}
+.table-of-contents ul li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.3rem 0;
+}
+.table-of-contents ul li a {
+  font-size: 0.85em;
+  text-decoration: none;
+}
+
+@media (max-width: 991px) {
+  .page-layout {
+    flex-direction: column;
   }
-  .navbar,
-  #intro,
-  input[type="checkbox"],
-  .done,
-  .in_progress {
-    display: none;
+  .table-of-contents {
+    position: static;
+    max-height: none;
+    width: 100%;
+    flex: auto;
   }
-  a {
-    color: #000;
-    text-decoration: underline;
-  }
-  a[href]:after {
-    content: none !important;
-  }
-  .tab-content > .tab-pane,
-  .pill-content > .pill-pane {
-    display: block;
-  }
-  .tab-pane {
-    page-break-after: always;
-  }
+}
+
+h3 {
+  scroll-margin-top: 66px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: sticky;
+  top: 66px;
+  background-color: rgb(33, 37, 41);
+  padding: 1.5rem 0;
+  margin-bottom: 0;
+}
+
+h3 a {
+  text-decoration: none;
+  line-height: 1;
+}
+
+h3 a:hover {
+  text-decoration: underline;
+}
+
+.btn-collapse span {
+  transition: transform 0.15s ease-in-out;
+}
+
+.btn-collapse.collapsed span {
+  transform: rotate(-90deg);
 }
 
 ul {
   list-style-type: none;
-  padding-left: 22px;
+  padding-left: 0.25rem;
 }
+
+.form-check {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.form-check input {
+  margin-top: 0.45rem;
+  cursor: pointer;
+}
+
+.col {
+  margin-bottom: 1rem;
+}
+
+/* 
 ul li ul {
   padding-top: 0;
 }
@@ -85,8 +179,6 @@ h3 {
   display: none;
   z-index: 1;
   bottom: 0;
-  /* The "Paper" bootstrap theme modifies the transition properties;
-  reset them to the default value to prevent ruining the fadeIn() */
   -webkit-transition: all 0s ease 0s;
   -o-transition: all 0s ease 0s;
   transition: all 0s ease 0s;
@@ -174,16 +266,6 @@ h3 {
   display: none;
 }
 
-/* Icon when the collapsible content is shown */
-.btn-collapse:after {
-  font-family: "Glyphicons Halflings";
-  content: "\e082";
-}
-/* Icon when the collapsible content is hidden */
-.btn-collapse.collapsed:after {
-  content: "\e081";
-}
-
 h1 {
   margin-top: 0;
   margin-bottom: 20px;
@@ -196,10 +278,6 @@ body.hide_completed .completed {
 body.hide_equipment [data-type="equipment"] {
   display: none !important;
 }
-
-/*body.collapse_all .btn-collapse {
-  display: none !important;
-}*/
 
 input[type="checkbox"]:checked + .item_content {
   text-decoration: line-through;
@@ -231,25 +309,6 @@ input[type="checkbox"]:checked ~ * > .glyphicon-chevron-down {
   display: inline-block;
 }
 
-/*
-input[type="checkbox"] ~ .glyphicon-eye-close { display:none; }
-
-input[type="checkbox"]:checked ~ .glyphicon-eye-close { display: inline-block; }
-
-input[type="checkbox"] ~ .glyphicon-eye-open { display: inline-block; }
-
-input[type="checkbox"]:checked ~ .glyphicon-eye-open { display: none; }
-
-input[type="checkbox"] ~ .glyphicon-chevron-down { display:none; }
-
-input[type="checkbox"]:checked ~ .glyphicon-chevron-down { display: inline-block; }
-
-input[type="checkbox"] ~ .glyphicon-chevron-up { display: inline-block; }
-
-input[type="checkbox"]:checked ~ .glyphicon-chevron-up { display: none; }
-
-*/
-
 section {
   margin-bottom: 40px;
-}
+} */
