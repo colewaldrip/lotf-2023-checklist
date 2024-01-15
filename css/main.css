@@ -137,6 +137,11 @@ ul {
   margin-bottom: 1rem;
 }
 
+nav li small {
+  font-size: 0.6em;
+  margin-left: -2px;
+}
+
 /* 
 ul li ul {
   padding-top: 0;
