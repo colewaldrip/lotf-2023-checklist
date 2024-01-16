@@ -204,9 +204,10 @@
             break;
           }
           if (
-            checkbox.is(":hidden") &&
-            checkbox.prop("id").match(regexFilter) &&
-            canFilter(checkbox.closest("li"))
+            checkbox.closest("li").prop("hidden") ||
+            (checkbox.is(":hidden") &&
+              checkbox.prop("id").match(regexFilter) &&
+              canFilter(checkbox.closest("li")))
           ) {
             continue;
           }

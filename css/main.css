@@ -122,6 +122,10 @@ ul {
   padding-left: 0.25rem;
 }
 
+ul li ul {
+  padding-left: 2rem;
+}
+
 .form-check {
   display: flex;
   gap: 1rem;
