@@ -1,16 +1,16 @@
 (function ($) {
-  var defaultProfiles = {
+  const profilesKey = "lotf2023_profiles";
+  const defaultProfiles = {
     current: "Default Profile",
-  };
-  defaultProfiles[profilesKey] = {
-    "Default Profile": {
-      checklistData: {},
+    [profilesKey]: {
+      "Default Profile": {
+        checklistData: {},
+      },
     },
   };
-  var profiles = $.jStorage.get(profilesKey, defaultProfiles);
+  const profiles = $.jStorage.get(profilesKey, defaultProfiles);
 
   jQuery(document).ready(function ($) {
-    // TODO Find a better way to do this in one pass
     $("ul li[data-id]").each(function () {
       addCheckbox(this);
     });
@@ -18,29 +18,32 @@
     populateProfiles();
 
     $('input[type="checkbox"]').click(function () {
-      var id = $(this).attr("id");
-      var isChecked = (profiles[profilesKey][profiles.current].checklistData[
+      const id = $(this).attr("id");
+      const isChecked = (profiles[profilesKey][profiles.current].checklistData[
         id
       ] = $(this).prop("checked"));
+
       if (isChecked === true) {
-        $('[data-id="' + id + '"] label').addClass("completed");
+        $('[data-id="' + id + '"]').addClass("completed");
       } else {
-        $('[data-id="' + id + '"] label').removeClass("completed");
+        $('[data-id="' + id + '"]').removeClass("completed");
       }
+
       $(this)
         .parent()
         .parent()
         .find('li > label > input[type="checkbox"]')
         .each(function () {
-          var id = $(this).attr("id");
+          const id = $(this).attr("id");
           profiles[profilesKey][profiles.current].checklistData[id] = isChecked;
           $(this).prop("checked", isChecked);
         });
       $.jStorage.set(profilesKey, profiles);
+
       calculateTotals();
     });
 
-    $("#profiles").change(function (event) {
+    $("#profiles").change(function () {
       profiles.current = $(this).val();
       $.jStorage.set(profilesKey, profiles);
       populateChecklists();
@@ -60,7 +63,7 @@
       $("#profileModalName").val(profiles.current);
       $("#profileModalAdd").hide();
       $("#profileModalUpdate").show();
-      if (canDelete()) {
+      if (canDeleteProfile()) {
         $("#profileModalDelete").show();
       } else {
         $("#profileModalDelete").hide();
@@ -70,7 +73,7 @@
 
     $("#profileModalAdd").click(function (event) {
       event.preventDefault();
-      var profile = $.trim($("#profileModalName").val());
+      const profile = $.trim($("#profileModalName").val());
       if (profile.length > 0) {
         if (typeof profiles[profilesKey][profile] == "undefined") {
           profiles[profilesKey][profile] = { checklistData: {} };
@@ -84,7 +87,7 @@
 
     $("#profileModalUpdate").click(function (event) {
       event.preventDefault();
-      var newName = $.trim($("#profileModalName").val());
+      const newName = $.trim($("#profileModalName").val());
       if (newName.length > 0 && newName != profiles.current) {
         profiles[profilesKey][newName] =
           profiles[profilesKey][profiles.current];
@@ -98,7 +101,7 @@
 
     $("#profileModalDelete").click(function (event) {
       event.preventDefault();
-      if (!canDelete()) {
+      if (!canDeleteProfile()) {
         return;
       }
       if (!confirm("Are you sure?")) {
@@ -112,63 +115,156 @@
       $("#profileModal").modal("hide");
     });
 
-    $("#toggleHideCompleted").change(function () {
-      var hidden = !$(this).is(":checked");
+    $("#toggleCollapseAll").click(function () {
+      let newState;
+      $('section [data-bs-toggle="collapse"]').each(function () {
+        const collapsed_key = $(this).attr("href");
 
-      $("body").toggleClass("hide_completed", !hidden);
+        if (newState === undefined) {
+          newState =
+            !profiles[profilesKey][profiles.current].collapsed[collapsed_key];
+        }
+
+        if (newState) {
+          $(collapsed_key).collapse("hide");
+        } else {
+          $(collapsed_key).collapse("show");
+        }
+
+        profiles[profilesKey][profiles.current].collapsed[collapsed_key] =
+          newState;
+      });
+
+      $.jStorage.set(profilesKey, profiles);
     });
 
-    $("#toggleHideEquipment").change(function () {
-      var hidden = !$(this).is(":checked");
-
-      $("body").toggleClass("hide_equipment", !hidden);
+    $("#toggleCompleted").click(function () {
+      const newState =
+        !profiles[profilesKey][profiles.current].filters["completed"];
+      profiles[profilesKey][profiles.current].filters["completed"] = newState;
+      $("body").toggleClass("hide_completed", newState);
+      $.jStorage.set(profilesKey, profiles);
     });
 
-    $("#toggleCollapseAll").change(function () {
-      if (
-        $(this).data("lastState") === null ||
-        $(this).data("lastState") === 0
-      ) {
-        // close all
-        $(".collapse").collapse("show");
+    $("#toggleEquipment").click(function () {
+      const newState =
+        !profiles[profilesKey][profiles.current].filters["equipment"];
+      profiles[profilesKey][profiles.current].filters["equipment"] = newState;
+      $("body").toggleClass("hide_equipment", newState);
+      $.jStorage.set(profilesKey, profiles);
+    });
 
-        // next state will be open all
-        $(this).data("lastState", 1);
-      } else {
-        // initial state...
-        // override accordion behavior and open all
-        $(".panel-collapse.in")
-          .removeData("bs.collapse.in")
-          .collapse({ parent: true, toggle: false })
-          .collapse("hide")
-          .removeData("bs.collapse.in")
-          // restore single panel behavior
-          .collapse({ parent: "#tabPlaythrough", toggle: false });
-
-        // next state will be close all
-        $(this).data("lastState", 0);
+    $("#resetPlaythrough").click(function () {
+      if (!confirm("Are you sure?")) {
+        return;
       }
-      var hidden = !$(this).is(":checked");
-      $("body").toggleClass("collapse_all", !hidden);
-    });
 
-    $("[data-item-toggle]").change(function () {
-      var type = $(this).data("item-toggle");
-      var to_hide = $(this).is(":checked");
+      const { checklistData } = profiles[profilesKey][profiles.current];
+
+      for (let key in checklistData) {
+        if (key.startsWith("playthrough")) {
+          $('[data-id="' + key + '"]').removeClass("completed");
+          $('[data-id="' + key + '"] input[type="checkbox"]').prop(
+            "checked",
+            false
+          );
+
+          delete checklistData[key];
+        }
+      }
+
+      profiles[profilesKey][profiles.current].checklistData = checklistData;
+      $.jStorage.set(profilesKey, profiles);
+
+      window.scrollTo({ top: 0, behavior: "instant" });
 
       calculateTotals();
     });
 
     $('[data-bs-toggle="tab"]').click(function () {
-      window.scrollTo({ top: 0 });
+      window.scrollTo({ top: 0, behavior: "instant" });
+
+      const attributeValue = $(this)
+        .attr("data-bs-target")
+        .replace(/-tab-pane$/, "")
+        .replace(/^#/, "");
+
+      window.history.replaceState(null, null, `?tab=${attributeValue}`);
     });
+
+    $('section [data-bs-toggle="collapse"]').click(function () {
+      const collapsed_key = $(this).attr("href");
+      const saved_tab_state =
+        !!profiles[profilesKey][profiles.current].collapsed[collapsed_key];
+
+      profiles[profilesKey][profiles.current].collapsed[collapsed_key] =
+        !saved_tab_state;
+
+      $.jStorage.set(profilesKey, profiles);
+    });
+
+    restoreState();
 
     calculateTotals();
   });
 
+  async function restoreState() {
+    const triggerTabList = document.querySelectorAll("#tabs button");
+    triggerTabList.forEach((triggerEl) => {
+      const tabTrigger = new bootstrap.Tab(triggerEl);
+
+      triggerEl.addEventListener("click", (event) => {
+        event.preventDefault();
+        tabTrigger.show();
+      });
+    });
+
+    if (!profiles[profilesKey][profiles.current].collapsed) {
+      profiles[profilesKey][profiles.current].collapsed = {};
+    }
+
+    if (!profiles[profilesKey][profiles.current].filters) {
+      profiles[profilesKey][profiles.current].filters = {};
+    }
+
+    if (profiles[profilesKey][profiles.current].filters["completed"]) {
+      $("body").addClass("hide_completed");
+    }
+
+    if (profiles[profilesKey][profiles.current].filters["equipment"]) {
+      $("body").addClass("hide_equipment");
+    }
+
+    $("section .collapse").each(function (_, element) {
+      const collapsed_key = `#${$(this).attr("id")}`;
+      const saved_tab_state =
+        profiles[profilesKey][profiles.current].collapsed[collapsed_key];
+
+      new bootstrap.Collapse(element, { toggle: saved_tab_state });
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    const currentTab = getURLParameterValue("tab") || "home";
+    const triggerEl = document.querySelector(
+      `[data-bs-target="#${currentTab}-tab-pane"]`
+    );
+    bootstrap.Tab.getInstance(triggerEl).show();
+
+    const hash = window.location.hash;
+
+    if (hash) {
+      const element = document.querySelector(hash);
+
+      if (element) {
+        element.scrollIntoView();
+      }
+    }
+  }
+
   function populateProfiles() {
     $("#profiles").empty();
-    $.each(profiles[profilesKey], function (index, value) {
+    $.each(profiles[profilesKey], function (index) {
       $("#profiles").append(
         $("<option></option>").attr("value", index).text(index)
       );
@@ -188,18 +284,18 @@
   }
 
   function calculateTotals() {
-    $('[id$="_overall_total"]').each(function (index) {
-      var type = this.id.match(/(.*)_overall_total/)[1];
-      var overallCount = 0,
+    $('[id$="_overall_total"]').each(function () {
+      const type = this.id.match(/(.*)_overall_total/)[1];
+      let overallCount = 0,
         overallChecked = 0;
-      $('[id^="' + type + '_totals_"]').each(function (index) {
-        var regex = new RegExp(type + "_totals_(.*)");
-        var regexFilter = new RegExp("^playthrough_(.*)");
-        var i = parseInt(this.id.match(regex)[1]);
-        var count = 0,
+      $('[id^="' + type + '_totals_"]').each(function () {
+        const regex = new RegExp(type + "_totals_(.*)");
+        const regexFilter = new RegExp("^playthrough_(.*)");
+        let i = parseInt(this.id.match(regex)[1]);
+        let count = 0,
           checked = 0;
-        for (var j = 1; ; j++) {
-          var checkbox = $("#" + type + "_" + i + "_" + j);
+        for (let j = 1; ; j++) {
+          const checkbox = $("#" + type + "_" + i + "_" + j);
           if (checkbox.length == 0) {
             break;
           }
@@ -245,10 +341,10 @@
   }
 
   function addCheckbox(el) {
-    var $el = $(el);
+    const $el = $(el);
 
-    var content = $el.clone().find("ul").remove().end().html();
-    var sublists = $el.children("ul");
+    let content = $el.clone().find("ul").remove().end().html();
+    const sublists = $el.children("ul");
 
     content = `
       <div class="form-check">
@@ -268,20 +364,20 @@
       ] === true
     ) {
       $("#" + $el.attr("data-id")).prop("checked", true);
-      $("label", $el).addClass("completed");
+      $el.addClass("completed");
     }
   }
 
-  function canDelete() {
-    var count = 0;
-    $.each(profiles[profilesKey], function (index, value) {
+  function canDeleteProfile() {
+    let count = 0;
+    $.each(profiles[profilesKey], function () {
       count++;
     });
     return count > 1;
   }
 
   function getFirstProfile() {
-    for (var profile in profiles[profilesKey]) {
+    for (let profile in profiles[profilesKey]) {
       return profile;
     }
   }
@@ -290,9 +386,9 @@
     if (!entry.attr("class")) {
       return false;
     }
-    var classList = entry.attr("class").split(/\s+/);
-    var foundMatch = 0;
-    for (var i = 0; i < classList.length; i++) {
+    const classList = entry.attr("class").split(/\s+/);
+    let foundMatch = 0;
+    for (let i = 0; i < classList.length; i++) {
       if (!classList[i].match(/^f_(.*)/)) {
         continue;
       }
@@ -316,62 +412,13 @@
     return true;
   }
 
-  /*
-   * -------------------------
-   * Back to top functionality
-   * -------------------------
-   */
-  $(function () {
-    var offset = 220;
-    var duration = 500;
-    $(window).scroll(function () {
-      if ($(this).scrollTop() > offset) {
-        $(".fadingbutton").fadeIn(duration);
-      } else {
-        $(".fadingbutton").fadeOut(duration);
-      }
-    });
+  function getURLParameterValue(paramName) {
+    const urlParams = new URLSearchParams(window.location.search);
 
-    $(".back-to-top").click(function (event) {
-      event.preventDefault();
-      $("html, body").animate({ scrollTop: 0 }, duration);
-      return false;
-    });
-  });
-
-  $("#toggleHideCompleted").attr("checked", false);
-
-  /*
-     * ------------------------------------------
-     * Restore tabs/hidden sections functionality
-     * ------------------------------------------
-     
-     $(function() {
-        // reset `Hide completed` button state (otherwise Chrome bugs out)
-        $('#toggleHideCompleted').attr('checked', false);
-
-        // restore collapsed state on page load
-        restoreState(profiles.current);
-
-        if (profiles[profilesKey][profiles.current].current_tab) {
-            $('.nav.nav-tabs li a[href="' + profiles[profilesKey][profiles.current].current_tab + '"]').click();
-        }
-
-        // register on click handlers to store state
-        $('a[href$="_col"]').on('click', function(el) {
-            var collapsed_key = $(this).attr('href');
-            var saved_tab_state = !!profiles[profilesKey][profiles.current].collapsed[collapsed_key];
-
-            profiles[profilesKey][profiles.current].collapsed[$(this).attr('href')] = !saved_tab_state;
-
-            $.jStorage.set(profilesKey, profiles);
-        });
-
-        $('.nav.nav-tabs li a').on('click', function(el) {
-            profiles[profilesKey][profiles.current].current_tab = $(this).attr('href');
-
-            $.jStorage.set(profilesKey, profiles);
-        });
-     });
-     */
+    if (urlParams.has(paramName)) {
+      return urlParams.get(paramName);
+    } else {
+      return null;
+    }
+  }
 })(jQuery);
